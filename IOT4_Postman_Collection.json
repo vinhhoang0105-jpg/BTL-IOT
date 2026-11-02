@@ -1,0 +1,534 @@
+{
+	"info": {
+		"_postman_id": "c1f7b02e-9d22-48f1-8314-e6962cb1c1d4",
+		"name": "IOT System API Collection",
+		"description": "Bộ sưu tập API hoàn chỉnh cho hệ thống IoT (gồm Backend IOT4 - PHP và IoT Agriculture System - Node.js), tích hợp sẵn test script tự động kiểm tra status code và schema JSON.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. IOT4 (PHP Backend - localhost)",
+			"item": [
+				{
+					"name": "1.1. Devices - Lấy trạng thái tất cả thiết bị",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response success is true\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Mỗi thiết bị có id, name, status\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var firstDevice = jsonData.data[0];",
+									"        pm.expect(firstDevice).to.have.property('id');",
+									"        pm.expect(firstDevice).to.have.property('name');",
+									"        pm.expect(firstDevice).to.have.property('status');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_iot4}}/api/devices/status.php",
+							"host": [
+								"{{base_url_iot4}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"status.php"
+							]
+						},
+						"description": "Lấy danh sách và trạng thái hiện tại (on/off) của tất cả thiết bị."
+					},
+					"response": []
+				},
+				{
+					"name": "1.2. Devices - Điều khiển BẬT thiết bị (TURN_ON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response success is true and returns actionId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('actionId');",
+									"    pm.collectionVariables.set(\"last_action_id\", jsonData.actionId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deviceId\": 1,\n    \"action\": \"TURN_ON\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url_iot4}}/api/devices/control.php",
+							"host": [
+								"{{base_url_iot4}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"control.php"
+							]
+						},
+						"description": "Gửi lệnh bật thiết bị (ví dụ Đèn LED deviceId = 1)."
+					},
+					"response": []
+				},
+				{
+					"name": "1.3. Devices - Điều khiển TẮT thiết bị (TURN_OFF)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response success is true and returns actionId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('actionId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deviceId\": 1,\n    \"action\": \"TURN_OFF\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url_iot4}}/api/devices/control.php",
+							"host": [
+								"{{base_url_iot4}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"control.php"
+							]
+						},
+						"description": "Gửi lệnh tắt thiết bị (ví dụ Đèn LED deviceId = 1)."
+					},
+					"response": []
+				},
+				{
+					"name": "1.4. Sensors - Dữ liệu cảm biến mới nhất",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains sensor readings\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('temperature');",
+									"    pm.expect(jsonData.data).to.have.property('humidity');",
+									"    pm.expect(jsonData.data).to.have.property('light');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_iot4}}/api/sensors/latest.php",
+							"host": [
+								"{{base_url_iot4}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"latest.php"
+							]
+						},
+						"description": "Lấy giá trị đo mới nhất của nhiệt độ, độ ẩm và ánh sáng."
+					},
+					"response": []
+				},
+				{
+					"name": "1.5. Sensors - Lịch sử cảm biến (Phân trang)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Phân trang hợp lệ\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('page');",
+									"    pm.expect(jsonData).to.have.property('limit');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_iot4}}/api/sensors/history.php?page=1&limit=10",
+							"host": [
+								"{{base_url_iot4}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"history.php"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Số trang"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Số bản ghi mỗi trang"
+								},
+								{
+									"key": "sensorId",
+									"value": "1",
+									"description": "Lọc theo ID cảm biến (1: Nhiệt độ, 2: Độ ẩm, 3: Ánh sáng)",
+									"disabled": true
+								},
+								{
+									"key": "keyword",
+									"value": "31",
+									"description": "Tìm kiếm theo từ khóa",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Xem lịch sử dữ liệu cảm biến với phân trang và lọc."
+					},
+					"response": []
+				},
+				{
+					"name": "1.6. Actions - Lịch sử thao tác thiết bị",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Trả về danh sách lịch sử thao tác\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_iot4}}/api/actions/history.php?page=1&limit=10",
+							"host": [
+								"{{base_url_iot4}}"
+							],
+							"path": [
+								"api",
+								"actions",
+								"history.php"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "FAILED",
+									"description": "Lọc theo status: SUCCESS | FAILED | PENDING",
+									"disabled": true
+								},
+								{
+									"key": "keyword",
+									"value": "Đèn",
+									"description": "Tìm kiếm theo tên thiết bị hoặc lệnh",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lấy lịch sử các lần điều khiển thiết bị."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. IoT Agriculture System (Node.js - port 8081)",
+			"item": [
+				{
+					"name": "2.1. Devices - Lấy trạng thái",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_nodejs}}/devices/status",
+							"host": [
+								"{{base_url_nodejs}}"
+							],
+							"path": [
+								"devices",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2. Devices - Gửi action điều khiển",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"TURN_ON\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url_nodejs}}/devices/1/action",
+							"host": [
+								"{{base_url_nodejs}}"
+							],
+							"path": [
+								"devices",
+								"1",
+								"action"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3. Sensor Data - Dữ liệu mới nhất",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_nodejs}}/sensor-data/latest",
+							"host": [
+								"{{base_url_nodejs}}"
+							],
+							"path": [
+								"sensor-data",
+								"latest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.4. Sensor Data - Danh sách lịch sử",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_nodejs}}/sensor-data?page=1&items=10",
+							"host": [
+								"{{base_url_nodejs}}"
+							],
+							"path": [
+								"sensor-data"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "items",
+									"value": "10"
+								},
+								{
+									"key": "type",
+									"value": "temperature",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.5. Actions - Danh sách thao tác",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_nodejs}}/actions?page=1&items=10",
+							"host": [
+								"{{base_url_nodejs}}"
+							],
+							"path": [
+								"actions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "items",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.6. Stats - Thống kê số lần bật tắt thiết bị",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_nodejs}}/stats/device-toggles?from=2026-05-01&to=2026-05-07",
+							"host": [
+								"{{base_url_nodejs}}"
+							],
+							"path": [
+								"stats",
+								"device-toggles"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2026-05-01"
+								},
+								{
+									"key": "to",
+									"value": "2026-05-07"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url_iot4",
+			"value": "http://localhost/IOT4",
+			"type": "string"
+		},
+		{
+			"key": "base_url_nodejs",
+			"value": "http://localhost:8081/api",
+			"type": "string"
+		},
+		{
+			"key": "last_action_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
